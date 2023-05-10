@@ -35,7 +35,7 @@ class TreeAndSpace {
                 tree.put(nodes[pos++], nn);
                 nn.parent = curr;
                 curr.childrens.add(nn);
-                q.add(curr);
+                q.add(nn);
             }
         }
     }
@@ -73,10 +73,9 @@ class TreeAndSpace {
 
     public static boolean unlock(Node curr, int userId) {
         // base condition
-        if (curr.isLocked == false || curr.id != userId) {
+        if (curr.isLocked == false|| curr.id != userId) {
             return false;
         }
-
         // make changes
         changeInParent(curr, -1);
         changeInChildrens(curr, -1);
@@ -93,12 +92,11 @@ class TreeAndSpace {
             Node parent = q.poll();
             for (Node children : parent.childrens) {
                 if (children.isLocked) {
-                    if (children.id == userId) {
-                        list.add(children);
-                    } else {
+                    if (children.id != userId) {
                         canUpgrade = false;
                         return list;
                     }
+                    list.add(children);
                 }
                 if (children.desCount > 0) {
                     q.add(children);
@@ -110,19 +108,17 @@ class TreeAndSpace {
 
     public static boolean upgrade(Node curr, int userId) {
         // base condition
-        if (curr.isLocked || curr.desCount > 0 || curr.ancCount == 0) {
+        if (curr.isLocked || curr.desCount == 0 || curr.ancCount > 0) {
             return false;
         }
-
-        List<Node> lockedChildres = new ArrayList<>();
+        List<Node> lockedChildrens = new ArrayList<>();
         boolean canUpgrade = true;
-        lockedChildres = getAllChildrens(curr, canUpgrade, userId);
+        lockedChildrens = getAllChildrens(curr, canUpgrade, userId);
         if (canUpgrade == false) {
             return false;
         }
-
         // make changes
-        for (Node node : lockedChildres) {
+        for (Node node : lockedChildrens) {
             unlock(node, userId);
         }
         changeInParent(curr, 1);
@@ -147,7 +143,7 @@ class TreeAndSpace {
 
         // Building an Tree
         BuildTree(nodes, N, K);
-
+        //System.out.println(tree);
         // Executing Queries
         for (int i = 0; i < Q; i++) {
             int type = sc.nextInt();
