@@ -77,33 +77,33 @@ class TreeAndSpace {
             return false;
         }
         // make changes
-        changeInParent(curr, -1);
+        changeInParent(curr.parent, -1);
         changeInChildrens(curr, -1);
         curr.isLocked = false;
         curr.id = -1;
         return true;
     }
 
-    public static List<Node> getAllChildrens(Node curr, boolean canUpgrade, int userId) {
-        List<Node> list = new ArrayList<>();
-        Queue<Node> q = new LinkedList<>();
-        q.add(curr);
-        while (q.size() > 0) {
-            Node parent = q.poll();
-            for (Node children : parent.childrens) {
-                if (children.isLocked) {
-                    if (children.id != userId) {
-                        canUpgrade = false;
-                        return list;
-                    }
-                    list.add(children);
-                }
-                if (children.desCount > 0) {
-                    q.add(children);
-                }
+    public static boolean getAllChildrens(Node curr,int userId,List<Node> lockedChildrens) {
+        if(curr.isLocked){
+            if(userId != curr.id){
+                return false;
+            }else{
+                lockedChildrens.add(curr);
             }
         }
-        return list;
+        
+        if(curr.desCount == 0){
+            return true;
+        }
+        
+        // a.add(node);
+        for(Node adj : curr.childrens){
+            boolean ans = getAllChildrens(adj,userId,lockedChildrens);
+            if(ans == false) return false;
+        }
+        
+        return true;
     }
 
     public static boolean upgrade(Node curr, int userId) {
@@ -112,8 +112,7 @@ class TreeAndSpace {
             return false;
         }
         List<Node> lockedChildrens = new ArrayList<>();
-        boolean canUpgrade = true;
-        lockedChildrens = getAllChildrens(curr, canUpgrade, userId);
+        boolean canUpgrade = getAllChildrens(curr, userId,lockedChildrens);
         if (canUpgrade == false) {
             return false;
         }
@@ -121,10 +120,9 @@ class TreeAndSpace {
         for (Node node : lockedChildrens) {
             unlock(node, userId);
         }
-        changeInParent(curr, 1);
-        changeInChildrens(curr, 1);
-        curr.isLocked = true;
-        curr.id = userId;
+
+        //locking the current node
+        lock(curr,userId);
         return true;
     }
 
